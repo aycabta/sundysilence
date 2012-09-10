@@ -57,4 +57,9 @@ The file is set "expect_title" setting is not joined the "title" setting.
 {{ title }} is replaced with that is joined string or not joined string
 in "pre_content", "post_content" and all entries.
 
+Run SundySilence when these files are ready.
+
+    sundysilence
+
+Just do it.
 
