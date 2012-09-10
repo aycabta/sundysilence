@@ -1,0 +1,16 @@
+#! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
+#
+# points.rb: publish HTML site from Markdown files.
+#
+# Copyright (C) 2012 by Code Ass (aycabta) <aycabta@gmail.com>
+# Distributed under MIT Lisence.
+#
+
+require 'rubygems'
+require 'sundysilence'
+
+ss = SundySilence::Builder.new
+ss.build_pages
+ss.cleanup
+

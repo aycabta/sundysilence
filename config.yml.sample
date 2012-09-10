@@ -1,0 +1,14 @@
+input_dir: input
+output_dir: published
+template_dir: templates
+stylesheet_dir: stylesheets
+
+pre_content: pre_content.html
+post_content: post_content.html
+
+title: "SundySilence Site"
+expect_title: index
+listpage_title: "list of pages"
+
+combination_page_file: all
+
