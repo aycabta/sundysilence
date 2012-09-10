@@ -52,7 +52,7 @@ This example file is named "the_page.md".
 The first line is the page title.
 If a entry contains the title string,
 that string is linked to this entry.
-This title string is join the "title" setting above: "The Page - The Static Wiki"
+This title string is join the "title" setting above: "The Page - The Static Wiki".
 The file is set "expect_title" setting is not joined the "title" setting.
 {{ title }} is replaced with that is joined string or not joined string
 in "pre_content", "post_content" and all entries.
