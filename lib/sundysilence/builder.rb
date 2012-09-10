@@ -53,7 +53,7 @@ module SundySilence
       end
   
       if not @config['combination_page_file'].nil?
-        @combination = ""
+        @combination = String.new
       end
     end
   
@@ -68,31 +68,31 @@ module SundySilence
       liquid = Liquid::Template.parse(text)
       liquid.render({'title' => title})
     end
+
+    def link_and_render(text)
+      splitted_text = Array.new
+      rest = text
+      while rest =~ /((http|https):\/\/([\w-]+\.)+[\w-]+(\/[\w\- \/.?%&=]*)?)/
+        pre = $~.pre_match
+        url = $1
+        rest = $~.post_match
+        splitted_text << link_to_entries(pre)
+        splitted_text << url
+      end
+      splitted_text << link_to_entries(rest)
+      text = splitted_text.join
+      @markdown.render(text)
+    end
   
     def build_a_entry(body, title)
-      urls = Array.new
-      body.gsub!(/((http|https):\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?)/) do |matched|
-        url = matched
-        breaks = ""
-        if url =~ /^(.*)([\r\n]+)$/
-          url = $1
-          breaks = $2
-        end
-        urls << url
-        "{{#{urls.size - 1}}}" + breaks
-      end
-      body = link_to_entries(body)
-      (0..urls.size - 1).each do |i|
-        body.sub!(/\{\{#{i.to_s}\}\}/, urls[i].to_s)
-      end if urls.size > 0
-      body = @markdown.render(body)
+      body = link_and_render(body)
       if not @config['combination_page_file'].nil?
         @combination += body
       end
       page = @pre_content + body + @post_content
-      page = render_template(page, title)
+      render_template(page, title)
     end
-  
+
     def build_entries
       @entries.each do |page_title, filename|
         output_filename = nil
@@ -112,6 +112,32 @@ module SundySilence
         end
       end
     end
+  
+    def build_combination_page
+      open(File.join(@config['output_dir'], @config['combination_page_file'] + '.html'), 'w') do |fd|
+        title = 'all - ' + @config['title']
+        combination = link_and_render(@combination)
+        page = @pre_content + combination + @post_content
+        page = render_template(page, title)
+        fd.puts page
+      end
+    end
+  
+    def build_list_page
+      title = @config['listpage_title'] + ' - ' + @config['title']
+      body = "\# #{title}\n\n"
+      list_text = String.new
+      @entries.each do |title, filename|
+        list_text += "* #{title}\n"
+      end
+      body += list_text
+      body = link_and_render(body)
+      page = @pre_content + body + @post_content
+      page = render_template(page, title)
+      open(File.join(@config['output_dir'], 'list.html'), 'w') do |fd|
+        fd.puts page
+      end
+    end
 
     def build_pages
       build_entries
@@ -120,32 +146,6 @@ module SundySilence
         build_combination_page
       end
       FileUtils.cp_r(@config['stylesheet_dir'], @config['output_dir'])
-    end
-  
-    def build_combination_page
-      open(File.join(@config['output_dir'], @config['combination_page_file'] + '.html'), 'w') do |fd|
-        title = 'all - ' + @config['title']
-        page = @pre_content + @combination + @post_content
-        page = render_template(page, title)
-        fd.puts page
-      end
-    end
-  
-    def build_list_page
-      open(File.join(@config['output_dir'], 'list.html'), 'w') do |fd|
-        title = @config['listpage_title'] + ' - ' + @config['title']
-        body = "\# #{title}\n\n"
-        list_text = ""
-        @entries.each do |title, filename|
-          list_text += "* #{title}\n"
-        end
-        body += list_text
-        body = link_to_entries(body)
-        body = @markdown.render(body)
-        page = @pre_content + body + @post_content
-        page = render_template(page, title)
-        fd.puts page
-      end
     end
   
     def cleanup
