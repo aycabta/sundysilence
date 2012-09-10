@@ -59,7 +59,7 @@ in "pre_content", "post_content" and all entries.
 
 Run SundySilence when these files are ready.
 
-    sundysilence
+    $ sundysilence
 
 Just do it.
 
