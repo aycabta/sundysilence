@@ -56,25 +56,27 @@ module SundySilence
         @combination = String.new
       end
     end
-  
+
     def link_to_entries(text)
       @index.gsub(text) do |s, i|
         link_to = @entries[s].gsub(/(.*)\.(md|markdown)$/, '\1.html')
         "<a href=\"./#{CGI.escape(link_to)}\">#{CGI.escape_html(s)}</a>"
       end
     end
-  
+
     def render_template(text, title)
+      title = CGI.escape_html(title)
       liquid = Liquid::Template.parse(text)
       liquid.render({'title' => title})
     end
 
     def link_and_render(text)
+      text.gsub!(/&/, '&amp;')
       splitted_text = Array.new
       rest = text
       while rest =~ /((http|https):\/\/([\w-]+\.)+[\w-]+(\/[\w\- \/.?%&=]*)?)/
         pre = $~.pre_match
-        url = $1
+        url = $&
         rest = $~.post_match
         splitted_text << link_to_entries(pre)
         splitted_text << url
@@ -83,7 +85,7 @@ module SundySilence
       text = splitted_text.join
       @markdown.render(text)
     end
-  
+
     def build_a_entry(body, title)
       body = link_and_render(body)
       if not @config['combination_page_file'].nil?
@@ -99,10 +101,10 @@ module SundySilence
         open(File.join(@config['input_dir'], filename), 'rb') do |fd|
           fd.gets
           body = fd.read
-          if not filename =~ /#{@config['expect_title']}\.(md|markdown)/
-            title = page_title + " - " + @config['title']
-          else
+          if filename =~ /#{@config['expect_title']}\.(md|markdown)/
             title = page_title
+          else
+            title = page_title + " - " + @config['title']
           end
           page = build_a_entry(body, title)
           output_filename = filename.gsub(/(.*)\.(md|markdown)$/, '\1.html')
@@ -115,9 +117,8 @@ module SundySilence
   
     def build_combination_page
       open(File.join(@config['output_dir'], @config['combination_page_file'] + '.html'), 'w') do |fd|
-        title = 'all - ' + @config['title']
-        combination = link_and_render(@combination)
-        page = @pre_content + combination + @post_content
+        title = "#{@config['combination_page_file']} - #{@config['title']}"
+        page = @pre_content + @combination + @post_content
         page = render_template(page, title)
         fd.puts page
       end
@@ -147,7 +148,7 @@ module SundySilence
       end
       FileUtils.cp_r(@config['stylesheet_dir'], @config['output_dir'])
     end
-  
+
     def cleanup
       File.unlink(INDEX_FILE)
     end
